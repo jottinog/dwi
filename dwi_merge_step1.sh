@@ -79,14 +79,25 @@ for ap in dwi_ap/*.nii dwi_ap/*.nii.gz; do
     fslmerge -t "$iter/dwi.nii.gz" "$ap_out" "$pa_out"
     rm -f "$ap_out" "$pa_out"
 
-    # Write bval and bvec
-    base_ap=${ap##*/}; base_ap=${base_ap%.nii*}
-    base_pa=${pa##*/}; base_pa=${base_pa%.nii*}
+        # Determine file stubs
+    base_ap=$(basename "$ap" .nii.gz)
+    base_ap=${base_ap%.nii}
+    base_pa=$(basename "$pa" .nii.gz)
+    base_pa=${base_pa%.nii}
+
+    # Merge bvals: concatenate AP then PA
     if [ -f "dwi_ap/${base_ap}.bval" ] && [ -f "dwi_pa/${base_pa}.bval" ]; then
       echo "$(cat dwi_ap/${base_ap}.bval) $(cat dwi_pa/${base_pa}.bval)" > "$iter/dwi.bval"
     fi
+
+    # Merge bvecs: each of 3 rows concatenated AP then PA
     if [ -f "dwi_ap/${base_ap}.bvec" ] && [ -f "dwi_pa/${base_pa}.bvec" ]; then
-      pr -mts' ' "dwi_ap/${base_ap}.bvec" "dwi_pa/${base_pa}.bvec" > "$iter/dwi.bvec"
+      rm -f "$iter/dwi.bvec"
+      for r in 1 2 3; do
+        ap_row=$(sed -n "${r}p" dwi_ap/${base_ap}.bvec)
+        pa_row=$(sed -n "${r}p" dwi_pa/${base_pa}.bvec)
+        echo "$ap_row $pa_row" >> "$iter/dwi.bvec"
+      done
     fi
 
     # Fieldmap: collect candidates by timestamp
