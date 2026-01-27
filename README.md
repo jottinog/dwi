@@ -15,4 +15,4 @@ After processing, we generate 4D volumes with different shell configurations tha
 
 The intermediate script (2.5) is just a batch runner for step 2. If output files generated during step 2 are found, it will proceed to the next subject.
 
-3. The last script, leverages the eddy_quad step in the previous to gather all participants json files to collapse into one single, dated csv file assessments on motion, SNR, CNR and guide the decision on quality control and selection of best individual's iteration (if this is the case).
+3. The last script, leverages the eddy_quad step in the previous to gather all participants json files to collapse into one single csv file to ease assessments on motion, SNR, CNR and help guiding decisions on quality control. If one subject has more than 1 iteration, it will further facilitate selection of the best individual's iteration.
