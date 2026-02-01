@@ -4,7 +4,7 @@ Necessary scripts to process diffusion-weighted imaging (dwi) data from El Sende
 
 For example, if a subject moved in run1 and we subseuqently have run1a and run1b, possible combinations include: run1a and run2 or run1b and run2 ✅. It will never combine run1a and run1b ❌.
 
-The script expects the following structure. Timestemp corresponds to YYYY/MM/DD/HH/MM/SS, typically contained within the header of the file after conversion with dcm2niix:
+The script expects the following structure. Timestamp corresponds to YYYY/MM/DD/HH/MM/SS, typically contained within the header of the file after conversion with dcm2niix:
 
       sub-001/
         dwi_1/
@@ -29,8 +29,10 @@ The script will result in a *dwi_merged* folder inside each participant with as 
           fieldmap.nii.gz     # the two b0s (named fieldmaps because the MRI sequence has it named like that)
           dwi.bval            # concatenated bval from run1 and run2
           dwi.bvec            # concatenated, and rotated, bvecs from run1 and run2
-        dwi_1
-        dwi_2
+        dwi_1/
+        dwi_2/
+        fieldmap_ap/
+        fieldmap_pa/
 
 4. The second step will round bvals (depending on the scanner brand, sometimes bvals of 0 appear as 0.001). Then, the script will (1) denoise the images (**dwidenoise** from MRtrix3, default), (2) run FSL's **TOPUP**, and (3) create acparams and index files and apply FSL's **EDDY** with outlier detection and replacement. You might want to check your scanning parameters to change these files accordingly in the script. Then, (4) a session file is created to run **EDDY_QUAD** for quality control. The session file tells EDDY_QUAD that 2 dwi sessions (run1 and run2) were conducted and thus head position could be slightly different from volume 51 to volume 52 (when run1 ends and run2 starts). In the last step, the script (5) corrects field inhomogeneities (MRtrix' **dwibiascorrect** ants).
 
