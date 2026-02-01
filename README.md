@@ -36,14 +36,14 @@ The script will result in a *dwi_merged* folder inside each participant with as 
 
 4. The second step will round bvals (depending on the scanner brand, sometimes bvals of 0 appear as 0.001). Then, the script will (1) denoise the images (**dwidenoise** from MRtrix3, default), (2) run FSL's **TOPUP**, and (3) create acparams and index files and apply FSL's **EDDY** with outlier detection and replacement. You might want to check your scanning parameters to change these files accordingly in the script. Then, (4) a session file is created to run **EDDY_QUAD** for quality control. The session file tells EDDY_QUAD that 2 dwi sessions (run1 and run2) were conducted and thus head position could be slightly different from volume 51 to volume 52 (when run1 ends and run2 starts). In the last step, the script (5) corrects field inhomogeneities (MRtrix' **dwibiascorrect** ants).
 
-After processing, we generate 4D volumes with different shell configurations that were most appropriate for each diffusion model:
+After processing, we generate 4D volumes with different shell configurations that were most appropriate for each diffusion model. **No user input is needed**. The script automatically extracts the volumes corresponding to the desired shells and re-arranges new bval/bvec files as needed. The following is modeled:
 
-  + FSL's **dtifit** (DTI model) was fitted on volumes containing b = 500 and  b = 1000. 
-  + The SMT model (**fitmicrodt** from https://github.com/ekaden/smt) was fitted on b = 1000, b = 2000, and b = 3000 (subsampled, see note below).
+  + FSL's **dtifit** (DTI model) was fitted on low-shell volumes containing b = 500 s/mm² and  b = 1000 s/mm². 
+  + The SMT model (**fitmicrodt** from https://github.com/ekaden/smt) was fitted on high-shell volumes, including b = 1000 s/mm², b = 2000 s/mm², and b = 3000 s/mm² (subsampled, see below).
+
+  NOTE: Because the b = 3000 s/mm² shell was heavily oversampled (59 of 102 volumes; ~57% of all diffusion directions), after processing and before fitting any diffusion model, we subsampled this shell to 30 directions, while retaining shells b = 1000 and b= 2000 s/mm² intact. The subsampling selected the first 30 b = 3000 s/mm² volumes, which were distributed across the full acquisition and thus covered the diffusion sphere.
     
-  NOTE: Because the b = 3000 s/mm² shell was heavily oversampled (59 of 102 volumes; ~57% of all diffusion directions), after processing and before fitting any diffusion model, we subsampled this shell to 30 directions, while retaining all lower-b shells. The subsampling selected the first 30 b = 3000 volumes, which were distributed across the full acquisition and thus covered the diffusion sphere.
-    
-  + The NODDI model (**AMICO**, https://github.com/daducci/AMICO) was fitted on b = 1000 and b = 2000.
+  + The NODDI model (**AMICO**, https://github.com/daducci/AMICO) was fitted on b = 1000 s/mm² and b = 2000 s/mm².
 
 The intermediate script (2.5) is just a batch runner for step 2. If output files generated during step 2 are found, it will proceed to the next subject.
 
