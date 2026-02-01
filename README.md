@@ -2,7 +2,11 @@ Processing pipeline for diffusion-weighted data from El Sendero (https://clinica
 
 1. The first step of the script will first co-register run1 and run2 (FSL's **FLIRT** + rotate bvecs of run2 with Python), and concatenate the two b0s to run TOPUP later. If more than two dwi runs are found (e.g., because of motion), the script will create as many iterations possible. Because in this dataset run1 and run2 include slightly different shell schemes, iterations will always be between run1 and run2.
 
-For example, if a subject moved in run1 and we subseuqently repeated the first run and have run1a and run1b, possible combinations include: run1a and run2 and run1b and run2 ✅. It will never combine run1a and run1b ❌.
+For example, if a subject moved in run1, and run1 was repeated leaving us with run1a and run1b, possible combinations include: 
+
+      run1a and run2 ✅
+      run1b and run2 ✅
+      It will never combine run1a and run1b ❌
 
 The script expects the following structure. Timestamp corresponds to YYYY/MM/DD/HH/MM/SS, typically contained within the header of the file after conversion with dcm2niix:
 
