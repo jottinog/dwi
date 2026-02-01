@@ -1,12 +1,12 @@
-Processing pipeline for diffusion-weighted data from El Sendero (https://clinicaltrials.gov/study/NCT05551650). This script is designed to work with data acquired in multiple runs (e.g., run1 and run2) acquired in the same phase-encoding direction (PA) and two b0s acquired separately in opposite phase-encoding directions (PA and AP; only to correct EPI distortions). Each run has 51 volumes (with multiple b0s intercalated), but the script *should* work well with other configurations. You can always modify the script to meet to your needs.
+Processing pipeline for diffusion-weighted data from El Sendero (https://clinicaltrials.gov/study/NCT05551650). This script is designed to work with data acquired in multiple runs (e.g., dwi_1 and dwi_2) acquired in the same phase-encoding direction (PA) and two b0s acquired separately in opposite phase-encoding directions (PA and AP; only to correct EPI distortions). Each run has 51 volumes (with multiple b0s intercalated), but the script *should* work well with other configurations. You can always modify the script to meet to your needs.
 
-1. The first step of the script will first co-register run1 and run2 (FSL's **FLIRT** + rotate bvecs of run2 with Python), and concatenate the two b0s to run TOPUP later. If more than two dwi runs are found (e.g., because of motion), the script will create as many iterations possible. Because in this dataset run1 and run2 include slightly different shell schemes, iterations will always be between run1 and run2.
+1. The first step of the script will first co-register dwi_1 and dwi_2 (FSL's **FLIRT** + rotate bvecs of dwi_2 with Python), and concatenate the two b0s to run TOPUP later. If more than two dwi runs are found (e.g., because of motion), the script will create as many iterations possible. Importantly, because in this dataset dwi_1 and dwi_2 include slightly different shell schemes, iterations will always be between dwi_1 and dwi_2.
 
-For example, if a subject moved in run1, and run1 was repeated leaving us with run1a and run1b, possible combinations include: 
+For example, if a subject moved in dwi_1, and it was repeated leaving us with dwi_1a and dwi_1b, possible combinations include: 
 
-      run1a and run2 ✅
-      run1b and run2 ✅
-      It will never combine run1a and run1b ❌
+      dwi_1a and dwi_2 ✅
+      dwi_1b and dwi_2 ✅
+      It will never combine dwi_1a and dwi_1b ❌
 
 The script expects the following structure. Timestamp corresponds to YYYY/MM/DD/HH/MM/SS, typically contained within the header of the file after conversion with dcm2niix:
 
@@ -24,7 +24,7 @@ The script expects the following structure. Timestamp corresponds to YYYY/MM/DD/
         fieldmap_pa/
           sub-001_timestamp.nii.gz
   
-The script will result in a *dwi_merged* folder inside each participant with as many iterations as possible (*iteration_1* if only run1 and run2 available). Files in the folder:
+The script will result in a *dwi_merged* folder inside each participant with as many iterations as possible (*iteration_1* if only dwi_1 and dwi_2 available). Files in the folder:
 
     sub-001/
       dwi_merged/
@@ -38,7 +38,7 @@ The script will result in a *dwi_merged* folder inside each participant with as 
         fieldmap_ap/
         fieldmap_pa/
 
-4. The second step will round bvals (depending on the scanner brand, sometimes bvals of 0 appear as 0.001). Then, the script will (1) denoise the images (**dwidenoise** from MRtrix3, default), (2) run FSL's **TOPUP**, and (3) create acparams and index files and apply FSL's **EDDY** with outlier detection and replacement. You might want to check your scanning parameters to change these files accordingly in the script. Then, (4) a session file is created to run **EDDY_QUAD** for quality control. The session file tells EDDY_QUAD that 2 dwi sessions (run1 and run2) were conducted and thus head position could be slightly different from volume 51 to volume 52 (when run1 ends and run2 starts). In the last step, the script (5) corrects field inhomogeneities (MRtrix' **dwibiascorrect** ants).
+4. The second step will round bvals (depending on the scanner brand, sometimes bvals of 0 appear as 0.001). Then, the script will (1) denoise the images (**dwidenoise** from MRtrix3, default), (2) run FSL's **TOPUP**, and (3) create acparams and index files and apply FSL's **EDDY** with outlier detection and replacement. You might want to check your scanning parameters to change these files accordingly in the script. Then, (4) a session file is created to run **EDDY_QUAD** for quality control. The session file tells EDDY_QUAD that 2 dwi sessions (dwi_1 and dwi_2) were conducted and thus head position could be slightly different from volume 51 to volume 52 (when run1 ends and run2 starts). In the last step, the script (5) corrects field inhomogeneities (MRtrix' **dwibiascorrect** ants).
 
 After processing, we generate 4D volumes with different shell configurations that were most appropriate for each diffusion model. **No user input is needed**. The script automatically extracts the volumes corresponding to the desired shells and re-arranges new bval/bvec files as needed. The following is modeled:
 
